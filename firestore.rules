@@ -1,0 +1,131 @@
+rules_version = '2';
+// HSD İAÜ Tanışma Oyunları · Firestore güvenlik kuralları
+// Firebase konsolu > Firestore Database > Rules (Kurallar) sekmesine bu dosyanın TAMAMINI yapıştırıp Publish'e basın.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function myEmail() { return request.auth.token.email; }
+    function isSuper() {
+      return signedIn() && request.auth.token.email_verified == true
+        && myEmail() == 'muhammetalib571@gmail.com';
+    }
+    function isMod() {
+      return isSuper() || (signedIn() && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/mods/$(myEmail())));
+    }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+    function owns() { return signedIn() && resource.data.uid == request.auth.uid; }
+
+    // Moderatör listesi: herkes okur, sadece yönetici değiştirir
+    match /mods/{email} {
+      allow read: if signedIn();
+      allow write: if isSuper();
+    }
+
+    // Katılımcılar: herkes kendi kaydını yazar, listeyi sadece moderatörler görür
+    match /users/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow create, update: if isMe(uid);
+      allow delete: if isMod();
+    }
+
+    // Şu an oynanan oyun
+    match /state/{doc} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+
+    // ---------- Tech Bingo ----------
+    match /bingo/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow write: if isMe(uid) || isMod();
+    }
+    match /bingoWinners/{uid} {
+      allow read: if signedIn();
+      allow write: if isMe(uid) || isMod();
+    }
+
+    // ---------- Hız Tanışması ----------
+    match /speed/{doc} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+
+    // ---------- Katil Kim? ----------
+    match /murder/{doc} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+    match /murderPlayers/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isMe(uid)
+        && get(/databases/$(database)/documents/murder/meta).data.status == 'lobby';
+      allow delete: if isMe(uid) || isMod();
+    }
+    match /murderCards/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow write: if isMod();
+    }
+    match /murderSecret/{doc} {
+      allow read, write: if isMod();
+    }
+    match /murderVotes/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow create, update: if isMe(uid)
+        && get(/databases/$(database)/documents/murder/meta).data.status == 'voting'
+        && exists(/databases/$(database)/documents/murderCards/$(request.auth.uid));
+      allow delete: if isMod();
+    }
+
+    // ---------- Cesaret ----------
+    match /dares/{id} {
+      allow read: if isMod() || (signedIn() && resource.data.authorUid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.drawnBy == null
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 200;
+      allow update: if isMod();
+      allow delete: if isMod() || (signedIn() && resource.data.authorUid == request.auth.uid && resource.data.drawnBy == null);
+    }
+    match /dareAssigned/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow write: if isMod();
+    }
+    match /dareStage/{doc} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+
+    // ---------- 2 Doğru 1 Yalan ----------
+    match /lies/{uid} {
+      allow read: if isMe(uid) || isMod();
+      allow create: if isMe(uid);
+      allow update: if isMod() || (isMe(uid) && resource.data.status == 'waiting');
+      allow delete: if isMod();
+    }
+    match /lieStage/{doc} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+    match /lieStageSecret/{doc} {
+      allow read, write: if isMod();
+    }
+    match /lieVotes/{id} {
+      allow read: if isMod() || owns();
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && id == request.resource.data.round + '_' + request.auth.uid
+        && get(/databases/$(database)/documents/lieStage/current).data.open == true
+        && get(/databases/$(database)/documents/lieStage/current).data.round == request.resource.data.round
+        && get(/databases/$(database)/documents/lieStage/current).data.uid != request.auth.uid;
+      allow delete: if isMod();
+    }
+    match /lieResults/{uid} {
+      allow read: if signedIn();
+      allow write: if isMod();
+    }
+  }
+}

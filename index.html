@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14171f">
+<title>HSD İAÜ Tanışma Oyunları</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Tek sütun, üstte oyun sekmeleri, krem kartlar. Kırmızı yalnızca yazıda. */
+:root{
+  --bg:#14171f;--surface:#1c2030;--surface-2:#242a3d;--line:#2f3650;
+  --fg:#f7f5f0;--muted:#9aa0ae;--red:#e0273f;--red-on-cream:#c80f2e;
+  --ink:#14171f;--ink-soft:#5b6070;--cream-line:#e2ddd2;
+  --display:"Unbounded","Arial Black",system-ui,sans-serif;
+  --body:"Figtree",-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;
+  padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+body:not(.is-mod) .mod-only{display:none!important}
+body:not(.is-super) .super-only{display:none!important}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:4px;min-width:0}
+.mark{font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.18em;color:var(--muted)}
+.mark b{color:var(--red);font-weight:800}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(24px,7vw,34px);line-height:1.1;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--red)}
+.me{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.me img{width:30px;height:30px;border-radius:50%}
+.me b{color:var(--fg);display:block;font-size:14px}
+.me .role{font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.me .role.mod{color:var(--red)}
+.live{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--muted)}
+.live b{color:var(--red)}
+
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--surface);padding:5px;border-radius:14px;border:1px solid var(--line)}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:600 13px/1.2 var(--body);padding:11px 4px;border-radius:10px;cursor:pointer;min-width:0;position:relative}
+.tab small{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.75;margin-bottom:3px}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--ink)}
+.tab.is-live small{color:var(--red);opacity:1}
+.tab.is-live small::before{content:"● CANLI · "}
+.tab.modtab{grid-column:1/-1}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+
+section.game{display:flex;flex-direction:column;gap:16px}
+.how{font-size:14px;color:var(--muted);margin:0}
+.how strong{color:var(--fg)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel.mod{border-style:dashed}
+.panel h2{font-family:var(--display);font-size:15px;font-weight:700;margin:0;letter-spacing:.02em}
+.step{font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--red)}
+label{font-size:13px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+input[type=text],input[type=email],input[type=number],textarea,select{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:12px;font:500 16px/1.4 var(--body)}
+textarea{resize:vertical;min-height:84px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{min-width:0}
+.spread{justify-content:space-between}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{appearance:none;border:0;cursor:pointer;font:700 15px/1 var(--body);padding:14px 18px;border-radius:12px;background:var(--fg);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.btn.small{padding:9px 12px;font-size:13px}
+.btn.wide{width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.note{font-size:14px;margin:0;min-height:1.4em}
+.note b{color:var(--red)}
+.meta{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.meta b{color:var(--fg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:transparent;font-family:var(--body);cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--fg);color:var(--fg);background:var(--surface-2)}
+.chip.static{cursor:default}
+.empty{color:var(--muted);font-size:14px;margin:0}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+ul.list li{display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0}
+ul.list li>span{min-width:0;overflow-wrap:anywhere}
+ul.list li b{color:var(--fg)}
+ul.list li .r{color:var(--red);font-weight:700}
+ol.rules{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+ol.rules b{color:var(--red)}
+.story{font-size:16px;line-height:1.6;margin:0}
+.story code{font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--red);font-size:14px}
+.big-status{font-family:var(--display);font-weight:700;font-size:18px;margin:0}
+.big-status b{color:var(--red)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+td.bad{color:var(--red);font-weight:700}
+tr.click{cursor:pointer}
+
+/* Kart */
+.card{background:var(--fg);color:var(--ink);border-radius:22px;padding:26px 22px;min-height:180px;display:flex;flex-direction:column;justify-content:center;gap:12px;text-align:center;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.card .kicker{font:700 11px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--red-on-cream)}
+.card .big{font-family:var(--display);font-weight:700;font-size:clamp(20px,5.5vw,28px);line-height:1.25;text-wrap:balance;overflow-wrap:anywhere}
+.card .who{font-size:14px;color:var(--ink-soft)}
+.card.back{background:var(--surface-2);color:var(--fg);border:1px dashed var(--line);box-shadow:none}
+.card.back .big{color:var(--muted)}
+.card.back .who{color:var(--muted)}
+.flip{animation:flip .45s ease}
+@keyframes flip{from{transform:rotateY(80deg) scale(.96);opacity:.4}to{transform:none;opacity:1}}
+
+/* Katil Kim rol kartı */
+.mcard{background:var(--fg);color:var(--ink);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px rgba(0,0,0,.35)}
+.mcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mcard .no{font:700 12px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft)}
+.mcard .role{font-family:var(--display);font-weight:800;font-size:26px;line-height:1.1}
+.mcard .role.bad{color:var(--red-on-cream)}
+.mcard .desc{margin:0;font-size:15px}
+.mcard .sec{border-top:1px solid var(--cream-line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.mcard .lab{font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--red-on-cream)}
+.mcard p{margin:0;font-size:15px}
+.mcard dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:15px}
+.mcard dt{color:var(--ink-soft)}
+.mcard dd{margin:0;font-weight:700}
+.clock{font-family:var(--display);font-weight:800;font-size:30px;font-variant-numeric:tabular-nums}
+.clock.low{color:var(--red)}
+.votes{display:flex;flex-direction:column;gap:6px}
+.vbtn{appearance:none;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:12px;padding:12px 14px;font:600 15px/1.2 var(--body);cursor:pointer}
+.vbtn[aria-pressed="true"]{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+
+/* Bingo */
+.bingo{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cell{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:12px;padding:8px 6px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;text-align:left;cursor:pointer;font:600 12.5px/1.25 var(--body);min-width:0;overflow-wrap:anywhere}
+.cell .nm{font-size:12px;font-weight:700;color:var(--muted)}
+.cell.done{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+.cell.done .nm{color:var(--red-on-cream)}
+.cell.sel{outline:2px solid var(--fg);outline-offset:2px}
+.cell[disabled]{cursor:default}
+.bingo-msg{font-family:var(--display);font-weight:800;font-size:24px;margin:0;color:var(--red)}
+
+/* Sahneler (tam ekran) */
+.stage{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));gap:16px}
+.stage-top{display:flex;justify-content:space-between;align-items:center;font-variant-numeric:tabular-nums;gap:10px}
+.timer{font-family:var(--display);font-weight:800;font-size:34px;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--red)}
+.score{font-weight:700;font-size:15px;color:var(--muted)}
+.score b{color:var(--fg);font-size:20px}
+.word{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-family:var(--display);font-weight:800;font-size:clamp(34px,11vw,84px);line-height:1.08;text-wrap:balance;overflow-wrap:anywhere;padding:0 8px}
+.word.q{font-size:clamp(26px,6.5vw,64px);font-weight:700;line-height:1.2}
+.word.switch{color:var(--red)}
+.stage-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stage-actions.three{grid-template-columns:1fr 1fr 1fr}
+.stage-actions .btn{padding:20px 10px;font-size:17px}
+.stage-cat{font-size:13px;color:var(--muted);text-align:center;letter-spacing:.12em;text-transform:uppercase}
+.stage-cat b{color:var(--red)}
+.bar{height:6px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--fg);width:100%;transform-origin:left}
+.sq{font-family:var(--display);font-weight:700;font-size:clamp(20px,5.5vw,26px);line-height:1.3;margin:0;text-wrap:balance}
+.sq.switch{color:var(--red)}
+
+/* 2D1Y */
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{appearance:none;width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;font-family:var(--body);cursor:pointer}
+.opt[disabled]{cursor:default}
+.opt[aria-pressed="true"]{border-color:var(--fg);background:var(--surface-2)}
+.opt .letter{font-family:var(--display);font-weight:800;font-size:20px;width:28px;text-align:center}
+.opt p{margin:0;font-size:17px;font-weight:600;min-width:0;overflow-wrap:anywhere}
+.opt .tag{display:block;font:700 11px/1.2 var(--body);letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+.tag.lie{color:var(--red)}
+.tag.truth{color:var(--muted)}
+.opt.dim{opacity:.55}
+.opt .cnt{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.lierow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.lierow input[type=radio]{margin-top:16px;width:20px;height:20px;accent-color:#f7f5f0}
+.lierow label{color:var(--fg)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+.confirm b{color:var(--red)}
+
+/* Giriş */
+.login{max-width:440px;margin:8vh auto 0;display:flex;flex-direction:column;gap:18px}
+.login h1{font-size:clamp(30px,9vw,44px)}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px}
+.gbtn svg{width:20px;height:20px}
+.err{color:var(--red);font-size:14px;margin:0;min-height:1.4em}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--fg);color:var(--ink);padding:12px 16px;border-radius:12px;font-weight:600;font-size:14px;max-width:min(92vw,520px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+footer{font-size:12px;color:var(--muted);text-align:center}
+@media (max-width:420px){.cell{min-height:84px;font-size:11.5px}.two{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.flip{animation:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ GİRİŞ ============ -->
+<div class="login" id="login">
+  <div class="mark">HSD <b style="color:var(--red)">İAÜ</b></div>
+  <h1>Tanışma <em>Oyunları</em></h1>
+  <p class="how">Oyunlara katılmak için Google hesabınla giriş yap. Adın oyunlarda görünecek, e-posta adresini sadece moderatörler görür.</p>
+  <button class="btn wide gbtn" id="login-btn">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.8 6.1C12.3 13.5 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.9-4.7l-7.8-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.7-4-13.6-9.8l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+    Google ile giriş yap
+  </button>
+  <p class="err" id="login-err"></p>
+  <p class="how">Siteyi WhatsApp ya da Instagram içinden açtıysan Google girişe izin vermeyebilir. Sağ üstteki menüden <strong>tarayıcıda aç</strong>.</p>
+</div>
+
+<!-- ============ UYGULAMA ============ -->
+<div class="wrap" id="app" hidden>
+  <header>
+    <div class="brand">
+      <div class="mark">HSD <b>İAÜ</b></div>
+      <h1>Tanışma <em>Oyunları</em></h1>
+    </div>
+    <div class="me">
+      <img id="me-photo" alt="" referrerpolicy="no-referrer" hidden>
+      <div><b id="me-name"></b><span class="role" id="me-role"></span></div>
+      <button class="btn ghost small" id="logout">Çıkış</button>
+    </div>
+  </header>
+
+  <div class="live" id="live-banner" hidden></div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="bingo"><small>Isınma</small>Tech Bingo</button>
+    <button class="tab" role="tab" data-tab="speed"><small>Eşleşme</small>Hız Tanışması</button>
+    <button class="tab" role="tab" data-tab="murder"><small>Ana oyun</small>Katil Kim?</button>
+    <button class="tab" role="tab" data-tab="dare"><small>Ekstra</small>Cesaret</button>
+    <button class="tab" role="tab" data-tab="who"><small>Ekstra</small>Ben Kimim</button>
+    <button class="tab" role="tab" data-tab="lie"><small>Ekstra</small>2 Doğru 1 Yalan</button>
+    <button class="tab modtab mod-only" role="tab" data-tab="mod"><small>Sadece moderatörler</small>Moderatör Paneli</button>
+  </nav>
+
+  <!-- ================= TECH BINGO ================= -->
+  <section class="game" id="g-bingo" hidden>
+    <p class="how">Odayı dolaş, her kutuya uyan birini bul ve adını yaz. <strong>Her kutuya farklı bir kişi</strong> yazılır, kendi adını yazamazsın. İlk satır, sütun ya da çapraz bingo yapar.</p>
+    <div class="panel">
+      <div class="row spread"><span class="step">Senin kartın</span><span class="meta"><span><b id="b-count">0</b>/16 kişi</span></span></div>
+      <div class="bingo" id="b-grid"><p class="empty">Kartın hazırlanıyor…</p></div>
+      <p class="bingo-msg" id="b-msg" aria-live="polite" hidden></p>
+      <div id="b-edit" hidden>
+        <label for="b-name"><span id="b-q">Kutu</span><input type="text" id="b-name" maxlength="30" autocomplete="off" placeholder="Bu kişinin adı"></label>
+        <div class="row" style="margin-top:8px">
+          <button class="btn small" id="b-save">Kaydet</button>
+          <button class="btn ghost small" id="b-clear">Temizle</button>
+          <button class="btn ghost small" id="b-close">Kapat</button>
+        </div>
+        <p class="note" id="b-note"></p>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Bingo yapanlar</h2>
+      <ul class="list" id="b-winners"><li>İlk bingo yapan burada görünecek.</li></ul>
+    </div>
+    <div class="panel mod mod-only">
+      <div class="row spread"><span class="step">Moderatör · Tüm kartlar</span><span class="meta"><span><b id="bm-count">0</b> kart</span></span></div>
+      <div class="tablewrap"><table><thead><tr><th>Kişi</th><th>Dolu</th><th>Bingo</th></tr></thead><tbody id="bm-rows"></tbody></table></div>
+      <p class="how">Bir satıra dokununca o kişinin kartını görürsün.</p>
+      <div id="bm-view" hidden></div>
+      <div class="row"><button class="btn ghost small" id="bm-reset">Tüm bingo kartlarını sıfırla</button></div>
+      <div class="confirm" id="bm-confirm" hidden><span>Herkesin kartı <b>silinecek</b>.</span><button class="btn small" id="bm-yes">Sil</button><button class="btn ghost small" id="bm-no">Vazgeç</button></div>
+    </div>
+  </section>
+
+  <!-- ================= HIZ TANIŞMASI ================= -->
+  <section class="game" id="g-speed" hidden>
+    <p class="how">İç içe iki halka kurun, herkes karşısındakine dönsün. Soru herkesin ekranında ve projeksiyonda çıkar, <strong>ikiniz de cevaplarsınız</strong>. Süre bitince <strong>dış halka bir kişi sağa kayar</strong>.</p>
+    <div class="panel">
+      <div class="row spread"><span class="step" id="sp-round">Bekleniyor</span><span class="clock" id="sp-timer">–:––</span></div>
+      <div class="bar"><i id="sp-bar"></i></div>
+      <span class="how" id="sp-cat"></span>
+      <p class="sq" id="sp-q">Moderatör başlatınca soru burada çıkacak.</p>
+      <button class="btn ghost small" id="sp-full" style="align-self:flex-start">Tam ekran aç</button>
+    </div>
+    <div class="panel mod mod-only">
+      <span class="step">Moderatör · Ayarlar</span>
+      <div class="two">
+        <label for="s-dur">Tur süresi<select id="s-dur"><option value="90">90 saniye</option><option value="120" selected>2 dakika</option><option value="180">3 dakika</option></select></label>
+        <label for="s-rounds">Tur sayısı<select id="s-rounds"><option>5</option><option selected>8</option><option>10</option><option>12</option><option>15</option></select></label>
+      </div>
+      <label for="s-switch">Yer değiştirme arası<select id="s-switch"><option value="10">10 saniye</option><option value="15" selected>15 saniye</option><option value="20">20 saniye</option></select></label>
+      <span class="how">Soru türleri</span>
+      <div class="chips" id="s-cats"></div>
+      <button class="btn wide" id="s-start">Hız tanışmasını başlat</button>
+      <div class="row">
+        <button class="btn ghost small" id="s-pause">Duraklat</button>
+        <button class="btn ghost small" id="s-skip">Soruyu değiştir</button>
+        <button class="btn ghost small" id="s-next">Sonraki aşama</button>
+        <button class="btn ghost small" id="s-stop">Bitir</button>
+      </div>
+      <p class="how">Moderatör sayfası açık kaldığı sürece turlar kendiliğinden ilerler.</p>
+    </div>
+  </section>
+
+  <!-- ================= KATİL KİM ================= -->
+  <section class="game" id="g-murder" hidden>
+    <div class="panel">
+      <span class="step">Durum</span>
+      <p class="big-status" id="m-status">Oyun henüz açılmadı.</p>
+      <div class="row spread" id="m-clockrow" hidden><span class="how">Kalan süre</span><span class="clock" id="m-clock">–:––</span></div>
+      <div class="row" id="m-joinrow" hidden>
+        <button class="btn" id="m-join">Oyuna katıl</button>
+        <button class="btn ghost" id="m-leave" hidden>Ayrıl</button>
+      </div>
+      <div class="meta"><span>Katılan <b id="m-count">0</b> kişi</span></div>
+      <div class="chips" id="m-names"></div>
+    </div>
+
+    <div id="m-card" hidden></div>
+
+    <div class="panel" id="m-votebox" hidden>
+      <span class="step">Oylama</span>
+      <h2>Pixel'i kim kapattı?</h2>
+      <p class="how">Oyunu istediğin kadar değiştirebilirsin, moderatör sonucu açıklayana kadar geçerli.</p>
+      <div class="votes" id="m-votes"></div>
+    </div>
+
+    <div class="panel" id="m-reveal" hidden></div>
+
+    <div class="panel">
+      <span class="step">Hikâye</span>
+      <p class="story">Hackathon gecesi, saat 03:00. İAÜ yazılım laboratuvarında herkes sabahki demo için kod yazıyor. Kulübün yapay zekâ asistanı <b>PIXEL</b> birden sustu. Ekranda tek bir satır kaldı: <code>sudo shutdown -h now</code>. Kapıdaki kart okuyucuya göre o saatte laboratuvarda yalnızca bu odadakiler vardı. Pixel'i kapatan kişi aramızda.</p>
+    </div>
+    <div class="panel">
+      <span class="step">Kurallar</span>
+      <ol class="rules">
+        <li>Her kartta bir <b>Kimlik</b> var: ekip, içecek, 03:00'te görüldüğün yer, bilgisayar. Biri sorarsa Kimliğini <b>doğru söylemek zorundasın</b>, katil dahil.</li>
+        <li>İpucunu paylaşmadan önce karşındakinin <b>adını, bölümünü ve ilginç bir bilgisini</b> öğren.</li>
+        <li>Katil ve suç ortağının elinde <b>uydurma ipuçları</b> var. Olumsuz ipuçları ("… DEĞİL") yalanı yakalamana yardım eder.</li>
+        <li>Sırrın sana ait: istersen sakla, istersen kullan.</li>
+        <li>Süre bitince herkes buradan oy verir. En çok oyu katil alırsa masumlar kazanır.</li>
+      </ol>
+    </div>
+
+    <div class="panel mod mod-only">
+      <span class="step">Moderatör · Oyunu yönet</span>
+      <div class="row" id="mm-actions"></div>
+      <label for="mm-min">Sorgu süresi<select id="mm-min"><option value="15">15 dakika</option><option value="20" selected>20 dakika</option><option value="25">25 dakika</option><option value="30">30 dakika</option></select></label>
+      <p class="note" id="mm-note"></p>
+      <div class="confirm" id="mm-confirm" hidden><span id="mm-confirm-text"></span><button class="btn small" id="mm-yes">Evet</button><button class="btn ghost small" id="mm-no">Vazgeç</button></div>
+      <div id="mm-sol" hidden></div>
+      <div class="tablewrap" id="mm-tablewrap" hidden><table><thead><tr><th>Kişi</th><th>Rol</th><th>Oyu</th><th>Aldığı oy</th></tr></thead><tbody id="mm-rows"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ================= CESARET ================= -->
+  <section class="game" id="g-dare" hidden>
+    <p class="how">Herkes bir ya da birkaç <strong>cesaret görevi</strong> yazar. Moderatör sırayla kart çeker, görev sahnede ve çeken kişinin telefonunda çıkar. Kimse kendi yazdığı görevi almaz, <strong>yazanın adı gizli kalır</strong>.</p>
+    <div class="panel">
+      <span class="step">Sahnede</span>
+      <div id="d-stage" class="card back"><span class="kicker">Cesaret kartı</span><div class="big">Moderatör kart çekince burada görünecek</div></div>
+    </div>
+    <div class="panel" id="d-minebox" hidden>
+      <span class="step">Senin görevin</span>
+      <div id="d-mine"></div>
+    </div>
+    <div class="panel">
+      <span class="step">Görev yaz</span>
+      <label for="d-text">Cesaret görevi<textarea id="d-text" maxlength="200" placeholder="Örn. Telefonundaki son fotoğrafı herkese göster"></textarea></label>
+      <button class="btn wide" id="d-add">Görevi desteye ekle</button>
+      <p class="note" id="d-note"></p>
+      <h2>Yazdıkların</h2>
+      <ul class="list" id="d-my"><li>Henüz görev yazmadın. En fazla 3 görev yazabilirsin.</li></ul>
+    </div>
+    <div class="panel mod mod-only">
+      <div class="row spread"><span class="step">Moderatör · Kart çek</span><span class="meta"><span>Destede <b id="dm-left">0</b> / <b id="dm-total">0</b></span></span></div>
+      <label for="dm-player">Kart çekecek kişi<select id="dm-player"></select></label>
+      <div class="row">
+        <button class="btn" id="dm-draw">Kart çek</button>
+        <button class="btn ghost small" id="dm-random">Rastgele kişi seç</button>
+      </div>
+      <div class="row" id="dm-after" hidden>
+        <button class="btn small" id="dm-done">Yaptı</button>
+        <button class="btn ghost small" id="dm-pass">Pas geçti</button>
+      </div>
+      <p class="note" id="dm-note"></p>
+      <h2>Çekilenler</h2>
+      <ul class="list" id="dm-hist"><li>Henüz kart çekilmedi.</li></ul>
+      <div class="row"><button class="btn ghost small" id="dm-reset">Desteyi sıfırla</button></div>
+      <div class="confirm" id="dm-confirm" hidden><span>Tüm görevler <b>silinecek</b>.</span><button class="btn small" id="dm-yes">Sil</button><button class="btn ghost small" id="dm-no">Vazgeç</button></div>
+    </div>
+  </section>
+
+  <!-- ================= BEN KİMİM ================= -->
+  <section class="game" id="g-who" hidden>
+    <p class="how">Bu oyun tek telefonla oynanır. Tahmin eden kişi telefonu <strong>ekranı dışa bakacak şekilde alnına</strong> tutar. Diğerleri ipucu verir, doğru bilince ya da pas denince <strong>arkadaşlar</strong> butona basar.</p>
+    <div class="panel">
+      <span class="step">Kategoriler</span>
+      <div class="chips" id="w-cats"></div>
+      <label for="w-custom">Kendi kelimelerin (her satıra bir tane)<textarea id="w-custom" placeholder="Örn. Hoca adları, kampüs mekânları…"></textarea></label>
+      <label for="w-time">Süre<select id="w-time"><option value="60">60 saniye</option><option value="90" selected>90 saniye</option><option value="120">120 saniye</option></select></label>
+      <button class="btn wide" id="w-start">Turu başlat</button>
+      <p class="note" id="w-note"></p>
+    </div>
+    <div class="panel" id="w-last" hidden>
+      <h2>Son tur</h2>
+      <p class="note" id="w-result"></p>
+      <ul class="list" id="w-list"></ul>
+    </div>
+  </section>
+
+  <!-- ================= 2 DOĞRU 1 YALAN ================= -->
+  <section class="game" id="g-lie" hidden>
+    <p class="how">Kendin hakkında <strong>2 doğru 1 yalan</strong> yaz ve yalanı işaretle, sadece sen ve moderatörler görürsünüz. Moderatör seni sahneye çağırınca bilgiler herkesin telefonunda karışık sırayla çıkar ve herkes yalanı oylar.</p>
+    <div class="panel">
+      <span class="step">Sahnede</span>
+      <p class="big-status" id="l-who">Sahne boş.</p>
+      <div class="opts" id="l-opts"></div>
+      <p class="note" id="l-result"></p>
+    </div>
+    <div class="panel">
+      <span class="step">Senin bilgilerin</span>
+      <div class="lierow"><input type="radio" name="l-lie" id="l-r0" value="0" aria-label="1. bilgi yalan"><label for="l-s0">1. bilgi<input type="text" id="l-s0" maxlength="120" placeholder="Örn. Hiç uçağa binmedim"></label></div>
+      <div class="lierow"><input type="radio" name="l-lie" id="l-r1" value="1" aria-label="2. bilgi yalan"><label for="l-s1">2. bilgi<input type="text" id="l-s1" maxlength="120" placeholder="Örn. 3 dil konuşuyorum"></label></div>
+      <div class="lierow"><input type="radio" name="l-lie" id="l-r2" value="2" aria-label="3. bilgi yalan"><label for="l-s2">3. bilgi<input type="text" id="l-s2" maxlength="120" placeholder="Örn. Bir kediyle yaşıyorum"></label></div>
+      <p class="how">Yuvarlak düğmeyle <strong>yalan olanı</strong> işaretle.</p>
+      <button class="btn wide" id="l-send">Gönder</button>
+      <p class="note" id="l-note"></p>
+    </div>
+    <div class="panel">
+      <h2>En iyi kandıranlar</h2>
+      <ul class="list" id="l-board"><li>Yalanı açıklanan herkes burada sıralanır.</li></ul>
+    </div>
+    <div class="panel mod mod-only">
+      <span class="step">Moderatör · Sahne</span>
+      <div class="row">
+        <button class="btn small" id="lm-reveal">Oylamayı kapat, yalanı göster</button>
+        <button class="btn ghost small" id="lm-random">Rastgele birini sahneye al</button>
+        <button class="btn ghost small" id="lm-clear">Sahneyi boşalt</button>
+      </div>
+      <p class="note" id="lm-note"></p>
+      <h2>Sırada bekleyenler</h2>
+      <ul class="list" id="lm-queue"><li>Henüz kimse göndermedi.</li></ul>
+      <div class="row"><button class="btn ghost small" id="lm-reset">Oyunu sıfırla</button></div>
+      <div class="confirm" id="lm-confirm" hidden><span>Tüm gönderiler, oylar ve sıralama <b>silinecek</b>.</span><button class="btn small" id="lm-yes">Sil</button><button class="btn ghost small" id="lm-no">Vazgeç</button></div>
+    </div>
+  </section>
+
+  <!-- ================= MODERATÖR PANELİ ================= -->
+  <section class="game mod-only" id="g-mod" hidden>
+    <div class="panel">
+      <span class="step">Canlı oyun</span>
+      <p class="how">Seçtiğin oyun herkesin ekranında öne çıkar ve katılımcılar o sekmeye geçer.</p>
+      <div class="chips" id="mod-live"></div>
+    </div>
+    <div class="panel">
+      <div class="row spread"><span class="step">Katılımcılar</span><span class="meta"><span><b id="mod-ucount">0</b> kişi giriş yaptı</span></span></div>
+      <ul class="list" id="mod-users"></ul>
+    </div>
+    <div class="panel">
+      <span class="step">Moderatörler</span>
+      <p class="how">Moderatörler tüm kartları, çözümleri ve oyları görür, oyunları yönetir. Moderatör eklemek ve çıkarmak sadece yöneticinin yetkisinde.</p>
+      <ul class="list" id="mod-list"></ul>
+      <div class="super-only" style="display:flex;flex-direction:column;gap:8px">
+        <label for="mod-email">Moderatör ekle (Gmail adresi)<input type="email" id="mod-email" autocomplete="off" placeholder="ornek@gmail.com"></label>
+        <button class="btn small" id="mod-add" style="align-self:flex-start">Moderatör yap</button>
+        <p class="how">Katılımcı listesindeki "Moderatör yap" düğmesini de kullanabilirsin.</p>
+      </div>
+      <p class="note" id="mod-note"></p>
+    </div>
+  </section>
+
+  <footer>HSD İAÜ · Huawei Student Developers İstanbul Aydın Üniversitesi</footer>
+</div>
+
+<!-- Ben Kimim sahnesi -->
+<div class="stage" id="w-stage" hidden>
+  <div class="stage-top"><span class="timer" id="w-timer">90</span><span class="score">Bildi <b id="w-score">0</b></span></div>
+  <div class="stage-cat" id="w-cat"></div>
+  <div class="word" id="w-word"></div>
+  <div class="stage-actions">
+    <button class="btn ghost" id="w-pass">Pas</button>
+    <button class="btn" id="w-ok">Bildi</button>
+  </div>
+  <button class="btn ghost small" id="w-stop">Turu bitir</button>
+</div>
+
+<!-- Hız tanışması tam ekran -->
+<div class="stage" id="s-stage" hidden>
+  <div class="stage-top"><span class="score" id="so-round">Bekleniyor</span><span class="timer" id="so-timer">–:––</span></div>
+  <div class="bar"><i id="so-bar"></i></div>
+  <div class="stage-cat" id="so-cat"></div>
+  <div class="word q" id="so-q"></div>
+  <div class="stage-actions three mod-only">
+    <button class="btn ghost" id="so-pause">Duraklat</button>
+    <button class="btn ghost" id="so-skip">Soruyu değiştir</button>
+    <button class="btn" id="so-next">Sonraki</button>
+  </div>
+  <button class="btn ghost small" id="so-close">Tam ekrandan çık</button>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
