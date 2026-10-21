@@ -11,7 +11,7 @@
 | `g-speed.js` | Hız Tanışması |
 | `g-ww.js` | Katil Kim? (Vampir Köylü odaları) |
 | `g-dare.js` | Cesaret |
-| `g-tabu.js` | Ben Kimim (Tabu usulü, gruplarla) |
+| `g-tabu.js` | Tabu (gruplarla, iki takım) |
 | `g-lie.js` | 2 Doğru 1 Yalan (sahne ve avcı modu) |
 | `data.js` | Oyun içerikleri: bingo maddeleri, sorular, tabu kelimeleri, roller. Kelime ya da soru eklemek için burayı düzenle. |
 | `firebase-config.js` | Firebase bağlantı bilgileri ve yönetici Gmail adresi |
@@ -28,11 +28,11 @@
 ## Oyunlar moderatör gözünden
 
 - **Moderatör Paneli → Canlı oyun:** Seçtiğin oyun herkesin ekranında öne çıkar.
-- **Tech Bingo:** "Bingoyu başlat" demeden kimse kartını göremez. İlk üç bingo sabit kazanandır. Ödül vermeden önce tablodan kazananın kartını kontrol et.
+- **Tech Bingo:** "Bingoyu başlat" demeden kimse kartını göremez. Kutulara sadece o an kartını açmış kişiler, adının ilk 3 harfi yazılarak eklenebilir. İlk üç bingo sabit kazanandır. Ödül vermeden önce tablodan kazananın kartını kontrol et.
 - **Hız Tanışması:** Ayarları seç ve başlat. Turlar senin sayfan açıkken kendiliğinden ilerler.
 - **Katil Kim?:** Oda aç. Herkes katılınca **Yönet → Rolleri dağıt ve başlat**'a bas. Geceyi "Sabahı getir" ile bitirirsin. Gündüz süreyi ayarlarsın, oylamayı açıp kapatırsın. Gece bilgileri senin sayfandan otomatik iletilir, bu yüzden oyun sürerken sayfayı kapatma. Birden fazla oda için başka bir moderatör kendi odasını açıp yönetebilir.
 - **Cesaret:** "Görev toplamayı aç"a bas. Uygunsuz görevleri kaldır, yazan kişiden yenisi istenir. "Başlat ve dağıt" deyince herkese kendi yazdığı dışında bir görev düşer.
-- **Ben Kimim:** Katılımcılar grup kurar. Sen listeden **Onayla**'ya basarsın, sistem gruptan birini oyun yöneticisi seçer ve gerisini o yönetir.
+- **Tabu:** Katılımcılar en az 4 kişilik grup kurar. Sen listeden gruptaki oyun yöneticisini seçip **Onayla**'ya basarsın, gerisini o yönetir.
 - **2 Doğru 1 Yalan:** "Cümle toplamayı aç"a bas. Sonra **Sahne modu**nu (herkes sırayla sahneye çıkar) ya da **Avcı modu**nu (herkes kendi hedefini bulup konuşur) başlat.
 
 ## Moderatör eklemek

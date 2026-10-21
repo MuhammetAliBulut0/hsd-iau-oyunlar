@@ -5,7 +5,7 @@ export const GAMES = {
   speed: "Hız Tanışması",
   murder: "Katil Kim?",
   dare: "Cesaret",
-  who: "Ben Kimim",
+  who: "Tabu",
   lie: "2 Doğru 1 Yalan"
 };
 
@@ -33,7 +33,7 @@ export const QS = {
   "Okul hayatı": ["Okulda tek bir şeyi değiştirebilsen ne olurdu?", "Yemekhanenin en iyi yemeği hangisi?", "Hiç derste uyuyakaldın mı?", "Bir kulüp kurabilsen ne kulübü olurdu?", "Mezun olunca nerede olmak istiyorsun?", "Bu dönem en çok hangi dersi seviyorsun?", "Sınav haftasında hayatta kalma taktiğin ne?", "Okulda tanıştığın ilk kişi kimdi?"]
 };
 
-/* ---------------- BEN KİMİM (TABU) ----------------
+/* ---------------- TABU ----------------
    Her satır: "Kelime|yasak1,yasak2,yasak3" */
 const T = {
   "Hayvanlar": ["Kedi|miyav,tüy,köpek", "Köpek|havlamak,kemik,sadık", "Aslan|orman kralı,yele,kükremek", "Fil|hortum,büyük,fildişi", "Zürafa|uzun,boyun,benek", "Penguen|kutup,buz,paytak", "Maymun|muz,ağaç,kuyruk", "Tavşan|havuç,kulak,zıplamak", "Kaplumbağa|kabuk,yavaş,deniz", "Yılan|zehir,sürünmek,tıslamak", "Arı|bal,vızıltı,iğne", "Kelebek|kanat,tırtıl,renkli", "Balık|su,yüzmek,akvaryum", "Köpekbalığı|diş,deniz,yüzgeç", "Yunus|zeki,deniz,atlamak", "At|binmek,nal,koşmak", "İnek|süt,mö,çiftlik", "Tavuk|yumurta,gıdak,horoz", "Ördek|vak,göl,yüzmek", "Baykuş|gece,göz,bilge", "Kartal|uçmak,pençe,yüksek", "Ayı|kış uykusu,bal,boz", "Kurt|uluma,sürü,ay", "Tilki|kurnaz,kırmızı,kuyruk", "Kanguru|Avustralya,kese,zıplamak", "Timsah|nehir,çene,sürüngen", "Örümcek|ağ,sekiz,bacak", "Karınca|küçük,çalışkan,yuva", "Sincap|fındık,ağaç,kabarık", "Deve|hörgüç,çöl,su"],

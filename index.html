@@ -149,6 +149,9 @@ ol.podium li b{flex:1}
 .announce{background:var(--bg);border:1px solid var(--line);border-left:0;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .announce b{color:var(--red);font-family:var(--display);font-size:14px;letter-spacing:.02em}
 .announce p{margin:0;font-size:15px}
+.winbox{background:var(--fg);color:var(--ink);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:8px;text-align:center}
+.winbox p{margin:0;font-size:15px}
+.winbox .rname{color:var(--red-on-cream)}
 .reveal-line{font-family:var(--display);font-weight:700;font-size:18px;margin:0;color:var(--red)}
 .votes{display:flex;flex-wrap:wrap;gap:6px}
 .vbtn{appearance:none;text-align:left;border:1px solid var(--line);background:var(--surface-2);color:var(--fg);border-radius:12px;padding:12px 14px;font:600 15px/1.2 var(--body);cursor:pointer}
@@ -262,7 +265,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     <button class="tab" role="tab" data-tab="speed"><small>Eşleşme</small>Hız Tanışması</button>
     <button class="tab" role="tab" data-tab="murder"><small>Ana oyun</small>Katil Kim?</button>
     <button class="tab" role="tab" data-tab="dare"><small>Ekstra</small>Cesaret</button>
-    <button class="tab" role="tab" data-tab="who"><small>Gruplarla</small>Ben Kimim</button>
+    <button class="tab" role="tab" data-tab="who"><small>Gruplarla</small>Tabu</button>
     <button class="tab" role="tab" data-tab="lie"><small>Ekstra</small>2 Doğru 1 Yalan</button>
     <button class="tab modtab mod-only" role="tab" data-tab="mod"><small>Sadece moderatörler</small>Moderatör Paneli</button>
   </nav>
@@ -272,14 +275,14 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     <div class="panel">
       <span class="step">Tech Bingo</span>
       <p class="big-status" id="b-status"></p>
-      <p class="how">Odayı dolaş ve her kutuya uyan birini bul. Kutuya dokunup o kişiyi listeden seç. Listede sadece siteye giriş yapmış katılımcılar var. <strong>Her kutuya farklı biri</strong> yazılır, kendini seçemezsin. Bir satır, sütun ya da çapraz dolunca bingo! <strong>İlk üç bingo yapan ödül kazanır.</strong></p>
+      <p class="how">Odayı dolaş ve her kutuya uyan birini bul. Kutuya dokun, kişinin adını sor ve ilk harflerini yaz. Sadece şu an bingo oynayanlar çıkar. <strong>Her kutuya farklı biri</strong> yazılır, kendini seçemezsin. Bir satır, sütun ya da çapraz dolunca bingo! <strong>İlk üç bingo yapan ödül kazanır.</strong></p>
     </div>
     <div class="panel" id="b-cardwrap" hidden>
       <div class="row spread"><span class="step">Senin kartın</span><span class="meta"><span><b id="b-count">0</b>/16 kişi</span></span></div>
       <p class="bingo-msg" id="b-msg" aria-live="polite" hidden></p>
       <div class="picker" id="b-pick" hidden>
         <p class="q" id="b-q"></p>
-        <input type="search" id="b-search" autocomplete="off" placeholder="İsim ara">
+        <input type="search" id="b-search" autocomplete="off" placeholder="Kişinin adının ilk 3 harfi">
         <div class="popts" id="b-opts"></div>
         <div class="row"><button class="btn ghost small" id="b-clear">Kutuyu boşalt</button><button class="btn ghost small" id="b-close">Kapat</button></div>
         <p class="note" id="b-note"></p>
@@ -399,7 +402,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     <div class="panel">
       <span class="step">Cesaret</span>
       <p class="big-status" id="d-status"></p>
-      <p class="how">Herkes bir cesaret görevi yazar. Moderatör başlatınca herkese <strong>kendi yazdığı dışında</strong> bir görev düşer ve herkes görevini yapmayı dener. Görevi kimin yazdığı gizli kalır.</p>
+      <p class="how">Herkes bir cesaret görevi yazar. Moderatör başlatınca herkese <strong>kendi yazdığı dışında, başkasına verilmemiş</strong> bir görev düşer ve herkes görevini yapar. Pas hakkı yok! Görevi kimin yazdığı gizli kalır.</p>
     </div>
     <div class="panel" id="d-gotbox" hidden><div id="d-got"></div></div>
     <div class="panel" id="d-form" hidden>
@@ -422,18 +425,18 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     </div>
   </section>
 
-  <!-- ================= BEN KİMİM (TABU) ================= -->
+  <!-- ================= TABU ================= -->
   <section class="game" id="g-who" hidden>
     <div class="panel">
-      <span class="step">Ben Kimim · Tabu usulü</span>
-      <p class="how">Grubunla oynanır. Sırası gelen kişi tahmin eder ve <strong>telefona bakmaz</strong>. Takım arkadaşları ekrandaki kelimeyi anlatır ama altındaki <strong>yasaklı kelimeleri</strong> söyleyemez. Rakip takım yasaklı kelime duyarsa "Tabu!"ya basar. Süre bitince sıra öbür takıma geçer.</p>
+      <span class="step">Tabu</span>
+      <p class="how">Grup iki takıma ayrılır. Sırası gelen kişi <strong>anlatır</strong>: kartı sadece o görür ve kelimeyi altındaki <strong>yasaklı kelimeleri</strong> söylemeden anlatır. Takım arkadaşları tahmin eder. Rakip takımdan rastgele seçilen bir <strong>kontrolcü</strong> de kartı görür ve yasaklı kelime duyarsa "Tabu!"ya basar. Bilinen her kelime +1, her tabu −1 puan. Süre bitince sıra öbür takıma geçer.</p>
     </div>
     <div class="panel" id="t-my" hidden></div>
     <div class="panel">
       <span class="step">Gruplar</span>
       <ul class="list" id="t-list"></ul>
       <div id="t-createbox" style="display:flex;flex-direction:column;gap:8px">
-        <p class="how">Arkadaşlarınla 3 ile 10 kişilik bir grup kur ya da listeden birine katıl. Grup toplanınca bir moderatör onaylar ve sistem içinizden birini <b>oyun yöneticisi</b> seçer. Süreyi, pas hakkını ve takımları o ayarlar.</p>
+        <p class="how">Arkadaşlarınla 4 ile 12 kişilik bir grup kur ya da listeden birine katıl. Grup toplanınca bir moderatör onaylar ve içinizden birini <b>oyun yöneticisi</b> yapar. Süreyi, pas hakkını ve kategorileri o ayarlar ve oyunu o başlatır.</p>
         <div class="row"><input type="text" id="t-newname" maxlength="30" placeholder="Grup adı" style="flex:1;min-width:160px"><button class="btn small" id="t-create">Grup kur</button></div>
       </div>
       <p class="note" id="t-note"></p>

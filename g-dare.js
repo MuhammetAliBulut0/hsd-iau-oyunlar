@@ -40,7 +40,7 @@ function render() {
   gb.hidden = !(st === "running" || st === "ended");
   if (!gb.hidden) {
     if (GOT) $("d-got").innerHTML = `<div class="card flip"><span class="kicker">Senin cesaret görevin</span><div class="big">${esc(GOT.text)}</div><div class="who">${GOT.result ? esc(GOT.result) : "Yazan kişi gizli"}</div></div>
-      ${st === "running" && !GOT.result ? `<div class="row"><button class="btn" data-r="Yaptı">Yaptım!</button><button class="btn ghost" data-r="Pas">Pas geçiyorum</button></div>` : ""}`;
+      ${st === "running" && !GOT.result ? `<p class="how">Pas hakkı yok, görevini yap ve işaretle!</p><div class="row"><button class="btn wide" data-r="Yaptı">Görevimi yaptım!</button></div>` : ""}`;
     else $("d-got").innerHTML = `<div class="card back"><span class="kicker">Cesaret kartı</span><div class="big">${MINE && MINE.status === "ok" ? "Görevin dağıtılınca burada çıkacak" : "Görev yazanlar oyuna katılır. Önce bir görev yaz."}</div></div>`;
   }
 }
@@ -56,7 +56,13 @@ async function deal(onlyNew) {
   } else {
     const news = ok.filter(s => !has.has(s.uid));
     if (!news.length) throw new Error("Görevi olmayan yeni katılımcı yok.");
-    news.forEach(s => { const from = pick(ok.filter(x => x.uid !== s.uid)); b.set(D("dareGot", s.uid), { text: from.text, fromUid: from.uid, fromName: from.name, toName: s.name, result: null, at: Date.now() }); });
+    // Yeni gelenlere önce kimseye verilmemiş görevleri dağıt, böylece herkes farklı görev yapsın
+    const used = new Set(GOTS.map(g => g.fromUid)), pool = shuffle(ok.filter(x => !used.has(x.uid)));
+    news.forEach(s => {
+      let i = pool.findIndex(x => x.uid !== s.uid), from;
+      if (i >= 0) { from = pool[i]; pool.splice(i, 1); } else from = pick(ok.filter(x => x.uid !== s.uid));
+      b.set(D("dareGot", s.uid), { text: from.text, fromUid: from.uid, fromName: from.name, toName: s.name, result: null, at: Date.now() });
+    });
   }
   await b.commit();
 }

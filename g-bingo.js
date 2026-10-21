@@ -1,6 +1,7 @@
-// TECH BINGO: moderatör başlatır, herkes kendi kartını doldurur. Kutulara sadece giriş yapmış katılımcılar yazılabilir.
+// TECH BINGO: moderatör başlatır, herkes kendi kartını doldurur. Kutulara sadece o an oyunda olan (kartını açmış) kişiler yazılabilir.
+// Liste baştan gösterilmez: en az 3 harf yazınca adı o harflerle başlayan oyuncular çıkar.
 // İlk üç bingo yapan sabit kazanandır (sıra sunucu saatine göre).
-import { S, $, D, C, esc, listen, act, shuffle, ms, byName, lower, confirmBox, btnRow, onPeople, PEOPLE, onGame, setGame, clearCol,
+import { S, $, D, C, esc, listen, act, shuffle, ms, byName, lower, confirmBox, btnRow, onGame, setGame, clearCol,
   writeBatch, db, serverTimestamp } from "./core.js";
 import { BINGO } from "./data.js";
 
@@ -9,13 +10,14 @@ for (let i = 0; i < 4; i++) { LINES.push([0, 1, 2, 3].map(k => i * 4 + k)); LINE
 LINES.push([0, 5, 10, 15], [3, 6, 9, 12]);
 const countLines = cells => LINES.filter(l => l.every(i => cells[i] && cells[i].u)).length;
 
-let G = { status: "off" }, CARD = null, cardLoaded = false, WINS = [], sel = -1, creating = false, ALL = [], view = null;
+let G = { status: "off" }, CARD = null, cardLoaded = false, WINS = [], sel = -1, creating = false, ALL = [], view = null, PLAYERS = [], joinedRound = null;
+const MIN_Q = 3;
 
 export function initBingo() {
-  onGame("bingo", g => { G = g; ensureCard(); render(); renderMod(); });
-  listen(D("bingoCards", S.me.uid), s => { CARD = s.exists() ? s.data() : null; cardLoaded = true; ensureCard(); render(); });
+  onGame("bingo", g => { G = g; ensureCard(); ensureJoined(); render(); renderMod(); });
+  listen(D("bingoCards", S.me.uid), s => { CARD = s.exists() ? s.data() : null; cardLoaded = true; ensureCard(); ensureJoined(); render(); });
   listen(C("bingoWins"), s => { WINS = s.docs.map(d => ({ uid: d.id, ...d.data() })).sort((a, b) => ms(a.at) - ms(b.at)); renderWins(); renderMod(); });
-  onPeople(() => { if (sel >= 0) renderPicker(); });
+  listen(C("bingoPlayers"), s => { PLAYERS = s.docs.map(d => ({ uid: d.id, ...d.data() })).sort(byName); ensureJoined(); if (sel >= 0) renderPicker(); });
 
   $("b-grid").onclick = e => {
     const b = e.target.closest(".cell"); if (!b || G.status !== "running" || !CARD) return;
@@ -40,8 +42,15 @@ async function ensureCard() {
   creating = true;
   await act(() => writeBatch(db).set(D("bingoCards", S.me.uid), {
     name: S.me.name, round: G.round || 0, cells: shuffle(BINGO).slice(0, 16).map(t => ({ t, n: "", u: "" })), lines: 0, filled: 0, updatedAt: serverTimestamp()
-  }).commit());
-  creating = false;
+  }).set(D("bingoPlayers", S.me.uid), { name: S.me.name, round: G.round || 0 }).commit());
+  joinedRound = G.round; creating = false;
+}
+// Kartı olan ama oyuncu listesinde görünmeyen (ör. sayfayı yenilemiş) kişiyi listeye ekle
+function ensureJoined() {
+  if (G.status !== "running" || !CARD || CARD.round !== G.round || joinedRound === G.round) return;
+  if (PLAYERS.some(p => p.uid === S.me.uid && p.round === G.round)) { joinedRound = G.round; return; }
+  joinedRound = G.round;
+  act(() => writeBatch(db).set(D("bingoPlayers", S.me.uid), { name: S.me.name, round: G.round || 0 }).commit());
 }
 function closePicker() { sel = -1; $("b-pick").hidden = true; render(); }
 function renderPicker() {
@@ -49,13 +58,15 @@ function renderPicker() {
   $("b-q").textContent = CARD.cells[sel].t;
   const used = new Set(CARD.cells.filter((x, i) => i !== sel && x.u).map(x => x.u));
   const q = lower($("b-search").value.trim());
-  const list = PEOPLE.filter(p => p.uid !== S.me.uid && !used.has(p.uid) && (!q || lower(p.name).includes(q)));
+  if (q.length < MIN_Q) { $("b-opts").innerHTML = `<p class="empty">Kutuya uyan kişinin adını sor ve en az ${MIN_Q} harfini yaz. Sadece şu an oyunda olanlar çıkar.</p>`; return; }
+  const words = n => lower(n).split(/\s+/);
+  const list = PLAYERS.filter(p => p.round === G.round && p.uid !== S.me.uid && !used.has(p.uid) && (lower(p.name).startsWith(q) || words(p.name).some(w => w.startsWith(q))));
   $("b-opts").innerHTML = list.length
-    ? list.slice(0, 60).map(p => `<button class="pbtn" data-uid="${esc(p.uid)}">${esc(p.name)}</button>`).join("")
-    : `<p class="empty">${q ? "Bu adla giriş yapmış kimse yok. Kişiden siteye giriş yapmasını iste." : "Henüz başka katılımcı yok."}</p>`;
+    ? list.slice(0, 8).map(p => `<button class="pbtn" data-uid="${esc(p.uid)}">${esc(p.name)}</button>`).join("")
+    : `<p class="empty">Bu adla oyunda kimse yok. Kişi Tech Bingo sekmesini açmamış olabilir ya da başka bir kutuya yazmışsındır.</p>`;
 }
 function choose(uid) {
-  const p = PEOPLE.find(x => x.uid === uid); if (!p || sel < 0) return;
+  const p = PLAYERS.find(x => x.uid === uid && x.round === G.round); if (!p || sel < 0) return;
   if (CARD.cells.some((x, i) => i !== sel && x.u === uid)) { $("b-note").textContent = "Bu kişi zaten başka bir kutuda. Her kutuya farklı biri."; return; }
   const cells = CARD.cells.map((x, i) => i === sel ? { ...x, n: p.name, u: p.uid } : x);
   closePicker(); save(cells);
@@ -102,12 +113,12 @@ function renderWins() {
 function modAction(a) {
   const box = $("bm-confirm");
   if (a === "start") return confirmBox(box, "Bingo başlasın mı? Herkesin kartı açılacak.", async () => {
-    await clearCol("bingoWins"); await clearCol("bingoCards"); await setGame("bingo", { status: "running", round: Date.now(), startedAt: Date.now() });
+    await clearCol("bingoWins"); await clearCol("bingoCards"); await clearCol("bingoPlayers"); await setGame("bingo", { status: "running", round: Date.now(), startedAt: Date.now() });
   });
   if (a === "end") return confirmBox(box, "Oyun bitsin mi? Kartlar kilitlenecek.", () => setGame("bingo", { status: "ended" }));
   if (a === "resume") return act(() => setGame("bingo", { status: "running" }));
   if (a === "off") return confirmBox(box, "Oyun kapanacak ve tüm kartlar silinecek.", async () => {
-    await setGame("bingo", { status: "off" }); await clearCol("bingoWins"); await clearCol("bingoCards");
+    await setGame("bingo", { status: "off" }); await clearCol("bingoWins"); await clearCol("bingoCards"); await clearCol("bingoPlayers");
   });
 }
 function renderMod() {

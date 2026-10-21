@@ -188,7 +188,10 @@ function renderMine() {
   }
   // Bitiş
   if (R.phase === "ended") {
-    h += `<p class="big-status"><b>${esc(R.winner || "")}</b></p><ul class="list">${(R.revealList || []).map(x => `<li><span>${esc(x.name)}</span><span class="${x.team === "kotu" ? "r" : ""}">${esc(x.role)}</span></li>`).join("")}</ul>`;
+    const myTeam = ROLE ? (WW_ROLES[ROLE.role] || {}).team : null, won = R.winnerTeam && myTeam === R.winnerTeam;
+    h += `<div class="winbox"><span class="kicker">Oyun bitti</span><div class="rname">${R.winnerTeam === "kotu" ? "Vampirler kazandı!" : R.winnerTeam === "iyi" ? "Köylüler kazandı!" : "Oyun bitti"}</div>
+      <p>${esc(R.winner || "")}</p>${R.winnerTeam && myTeam ? `<p><b>${won ? "Tebrikler, takımın kazandı!" : "Bu sefer takımın kaybetti."}</b></p>` : ""}</div>`;
+    h += `<span class="step">Herkesin rolü</span><ul class="list">${(R.revealList || []).map(x => `<li><span>${esc(x.name)}${R.winnerTeam && x.team === R.winnerTeam ? " · kazandı" : ""}</span><span class="${x.team === "kotu" ? "r" : ""}">${esc(x.role)}</span></li>`).join("")}</ul>`;
     h += `<button class="btn ghost small" data-a="leave">Odadan çık</button>`;
   }
   // Oyuncular
@@ -254,13 +257,20 @@ function auto() {
   writes.forEach(([uid, data]) => { M.inbox[uid] = { ...(M.inbox[uid] || {}), ...data }; setDoc(D("ww", M.id, "inbox", uid), data, { merge: true }).catch(e => console.warn(e)); });
 }
 
-function winCheck() {
-  const alive = M.players.filter(p => p.alive && M.roles[p.uid]);
+// dead: bu işlemde ölecekler, revived: geri gelecekler. Kazanan varsa { team, text } döner.
+function winCheck(dead = [], revived = []) {
+  const isAlive = p => (p.alive || revived.includes(p.uid)) && !dead.includes(p.uid);
+  const alive = M.players.filter(p => isAlive(p) && M.roles[p.uid]);
   const v = alive.filter(p => M.roles[p.uid].role === "vampir").length, o = alive.length - v;
   if (!alive.length) return null;
-  if (v === 0) return "Köylüler kazandı! Bütün vampirler elendi.";
-  if (v >= o) return "Vampirler kazandı! Sayıları köylülere yetişti.";
+  if (v === 0) return { team: "iyi", text: "Köylüler kazandı! Bütün vampirler elendi." };
+  if (v >= o) return { team: "kotu", text: "Vampirler kazandı! Sayıları köylülere yetişti." };
   return null;
+}
+function endPayload(win, extra) {
+  return { phase: "ended", timerEnd: null, lastOut: null, winner: win ? win.text : "Oyun moderatör tarafından bitirildi.", winnerTeam: win ? win.team : null,
+    announce: { title: "Oyun bitti", lines: [...(extra || []), win ? win.text : "Oyun moderatör tarafından bitirildi."] },
+    revealList: M.players.map(p => ({ name: p.name, role: M.roles[p.uid] ? roleName(M.roles[p.uid].role) : "–", team: M.roles[p.uid] ? (WW_ROLES[M.roles[p.uid].role] || {}).team : "" })) };
 }
 const deathLine = (uid, reveal) => `${pname(uid)}${reveal && M.roles[uid] ? ` (${roleName(M.roles[uid].role)})` : ""}`;
 
@@ -308,8 +318,9 @@ function modAction(a, v) {
     deaths.forEach(uid => kill(b, uid));
     if (deaths.length) deaths.forEach(uid => lines.push(`${deathLine(uid, reveal)} bu gece öldü.`)); else lines.push("Bu gece kimse ölmedi.");
     if (deaths.some(uid => M.roles[uid] && M.roles[uid].role === "avci")) lines.push("Avcı öldü! Son atışını yapacak: moderatöre birini göstersin.");
-    lines.push("Tartışma başlasın: vampirler kim?");
-    b.update(ref, { phase: "day", timerEnd: Date.now() + M.min * 60000, timerPaused: false, timerLeft: 0, announce: { title: `Gece ${n} bitti`, lines } });
+    const win = winCheck(deaths);
+    if (win) b.update(ref, endPayload(win, lines));
+    else { lines.push("Tartışma başlasın: vampirler kim?"); b.update(ref, { phase: "day", timerEnd: Date.now() + M.min * 60000, timerPaused: false, timerLeft: 0, announce: { title: `Gece ${n} bitti`, lines } }); }
     await b.commit(); M.override = "";
   });
   if (a === "timer") return act(() => updateDoc(ref, { timerEnd: Date.now() + M.min * 60000, timerPaused: false, timerLeft: 0 }));
@@ -323,7 +334,13 @@ function modAction(a, v) {
     const out = M.out === "-" ? "" : (M.out || top), b = writeBatch(db), lines = [];
     if (out) { kill(b, out); lines.push(`${deathLine(out, reveal)} oylamayla elendi.`); if (M.roles[out] && M.roles[out].role === "avci") lines.push("Avcı elendi! Son atışını yapacak: moderatöre birini göstersin."); }
     else lines.push("Bu oylamada kimse elenmedi.");
-    b.update(ref, { phase: "result", lastOut: out ? { uid: out, name: pname(out) } : null, timerEnd: null, announce: { title: `Gündüz ${n} oylaması`, lines } });
+    const win = out ? winCheck([out]) : null, yaz = aliveOf("yazilimci")[0];
+    const canUndo = win && yaz && yaz.uid !== out && !(M.roles[yaz.uid] || {}).ctrlzUsed;
+    if (win && !canUndo) b.update(ref, endPayload(win, lines));
+    else {
+      if (canUndo) lines.push("Yazılımcı Ctrl+Z yapmazsa oyun bitecek!");
+      b.update(ref, { phase: "result", lastOut: out ? { uid: out, name: pname(out) } : null, timerEnd: null, announce: { title: `Gündüz ${n} oylaması`, lines } });
+    }
     await b.commit(); M.out = "";
   });
   if (a === "ctrlz") return act(async () => {
@@ -334,17 +351,16 @@ function modAction(a, v) {
     b.update(ref, { lastOut: null, announce: { title: "Ctrl+Z!", lines: [`${yaz.name} Yazılımcı çıktı ve oylamayı geri aldı.`, `${room.lastOut.name} oyuna geri döndü.`] } });
     await b.commit();
   });
-  if (a === "night") return act(() => updateDoc(ref, { phase: "night", night: n + 1, timerEnd: null, lastOut: null,
-    announce: { title: `Gece ${n + 1}`, lines: ["Herkes gözlerini kapatsın. Görevi olanlar seçimini telefondan yapsın."] } }));
-  if (a === "kill") return act(() => { const b = writeBatch(db); kill(b, v); return b.commit(); });
+  if (a === "night") return act(() => { const win = winCheck();
+    return updateDoc(ref, win ? endPayload(win) : { phase: "night", night: n + 1, timerEnd: null, lastOut: null,
+      announce: { title: `Gece ${n + 1}`, lines: ["Herkes gözlerini kapatsın. Görevi olanlar seçimini telefondan yapsın."] } }); });
+  if (a === "kill") return act(() => { const b = writeBatch(db); kill(b, v); const win = winCheck([v]); if (win) b.update(ref, endPayload(win, [`${deathLine(v, reveal)} elendi.`])); return b.commit(); });
   if (a === "revive") return act(() => updateDoc(D("ww", M.id, "players", v), { alive: true, roleShown: null }));
-  if (a === "end") return confirmBox(box, "Oyun bitsin ve herkesin rolü açıklansın mı?", () => updateDoc(ref, {
-    phase: "ended", timerEnd: null, winner: winCheck() || "Oyun moderatör tarafından bitirildi.",
-    revealList: M.players.map(p => ({ name: p.name, role: M.roles[p.uid] ? roleName(M.roles[p.uid].role) : "–", team: M.roles[p.uid] ? (WW_ROLES[M.roles[p.uid].role] || {}).team : "" })) }));
+  if (a === "end") return confirmBox(box, "Oyun bitsin ve herkesin rolü açıklansın mı?", () => updateDoc(ref, endPayload(winCheck())));
   if (a === "again") return confirmBox(box, "Aynı oyuncularla yeni oyun kurulsun mu? Roller sıfırlanacak.", async () => {
     for (const c of ["roles", "actions", "inbox", "votes"]) await clearCol("ww", M.id, c);
     const b = writeBatch(db); M.players.forEach(p => b.update(D("ww", M.id, "players", p.uid), { alive: true, roleShown: null }));
-    b.update(ref, { phase: "lobby", night: 0, announce: null, winner: null, revealList: null, lastOut: null, timerEnd: null }); await b.commit();
+    b.update(ref, { phase: "lobby", night: 0, announce: null, winner: null, winnerTeam: null, revealList: null, lastOut: null, timerEnd: null }); await b.commit();
   });
   if (a === "delete") return confirmBox(box, `"${esc(room.name)}" odası tamamen silinsin mi?`, async () => {
     for (const c of ["players", "roles", "actions", "inbox", "votes"]) await clearCol("ww", M.id, c);
@@ -391,10 +407,9 @@ function renderMod() {
   if (ph === "result") {
     const yaz = aliveOf("yazilimci")[0], req = yaz && M.actions[yaz.uid] && M.actions[yaz.uid].kind === "ctrlz" && M.actions[yaz.uid].day === n && room.lastOut && !(M.roles[yaz.uid] || {}).ctrlzUsed;
     if (req) h += `<div class="announce"><b>Yazılımcı Ctrl+Z istiyor!</b><p>${esc(yaz.name)}, ${esc(room.lastOut.name)} geri gelsin istiyor.</p><button class="btn small" data-a="ctrlz">Ctrl+Z'yi uygula</button></div>`;
-    h += `<div class="row"><button class="btn" data-a="night">Geceyi başlat</button></div>`;
+    h += `<div class="row"><button class="btn" data-a="night">${winCheck() ? "Ctrl+Z yapılmadı, oyunu bitir" : "Geceyi başlat"}</button></div>`;
   }
-  const win = ph !== "lobby" && ph !== "ended" ? winCheck() : null;
-  if (win) h += `<div class="announce"><b>${esc(win)}</b><p>Oyunu bitirip rolleri açıklayabilirsin.</p></div>`;
+  if (ph === "ended") h += `<div class="announce"><b>${esc(room.winner || "Oyun bitti")}</b><p>Roller herkese açıklandı. Aynı oyuncularla yeniden oynayabilirsin.</p></div>`;
 
   // Oyuncu tablosu
   h += `<div class="tablewrap"><table><thead><tr><th>Oyuncu</th><th>Rol</th><th>Durum</th><th></th></tr></thead><tbody>${M.players.map(p => {
