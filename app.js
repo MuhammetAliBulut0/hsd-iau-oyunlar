@@ -57,7 +57,7 @@ function boot() {
   const r = $("me-role");
   r.textContent = S.isSuper ? "Yönetici" : S.isMod ? "Moderatör" : "Katılımcı";
   r.classList.toggle("mod", S.isMod);
-  initTabs(); initLive();
+  initTabs(); initLive(); initGuide();
   for (const f of [initBingo, initSpeed, initWW, initDare, initTabu, initLie]) {
     try { f(); } catch (e) { console.error(e); toast("Bir oyun yüklenemedi: " + e.message); }
   }
@@ -121,4 +121,39 @@ function renderUsers() {
   $("mod-ucount").textContent = USERS.length;
   const modSet = new Set(MODS.map(m => m.email)); modSet.add(SUPER_ADMIN_EMAIL.toLowerCase());
   $("mod-users").innerHTML = USERS.length ? USERS.map(u => `<li><span><b>${esc(u.name)}</b><br><span class="small">${esc(u.email)}</span></span>${modSet.has(u.email) ? `<span class="r">Moderatör</span>` : S.isSuper ? `<button class="btn ghost small" data-mod="${esc(u.email)}">Moderatör yap</button>` : ""}</li>`).join("") : "<li>Henüz kimse giriş yapmadı.</li>";
+}
+
+/* ---------- ilk giriş rehberi ---------- */
+const GUIDE_KEY = "hsd-guide-v1";
+function guideSteps() {
+  const steps = [
+    { t: "Hoş geldin!", b: `<p>Burası HSD İAÜ tanışma oyunlarının sitesi. Bütün oyunlar telefonundan oynanır, hiçbir şey indirmene gerek yok.</p><p>Bu kısa rehber 1 dakika sürer.</p>` },
+    { t: "Oyunlar üstteki sekmelerde", b: `<p>Sayfanın üstünde altı oyun var: <b>Tech Bingo, Hız Tanışması, Katil Kim?, Cesaret, Tabu</b> ve <b>2 Doğru 1 Yalan</b>.</p><p>Bir sekmeye dokununca o oyunun ekranı açılır.</p>` },
+    { t: "Oyunu moderatör başlatır", b: `<p>Oyunlar kendi kendine başlamaz. Moderatörler hangi oyunun oynanacağını seçer ve başlatır.</p><p>O sırada oynanan oyunun sekmesinde <span class="hl">● CANLI</span> yazar ve ekranın otomatik oraya geçer. Sen sadece ekrandaki yönergeleri izle.</p>` },
+    { t: "Gizli olanlar sende kalır", b: `<ul><li>Bingo kartın, cesaret görevin, Katil Kim rolün gibi bilgileri <b>sadece sen</b> görürsün.</li><li>Katil Kim rolün kapalı durur, görmek için karta dokun. 10 saniye sonra kendiliğinden kapanır.</li><li>Telefonunu başkalarına gösterme, oyunun tadı kaçar!</li></ul>` },
+    { t: "Takılırsan", b: `<ul><li>Her oyunun altında <b>"Nasıl oynanır?"</b> bölümü var.</li><li>Bu rehbere sağ üstteki <b>Rehber</b> düğmesiyle istediğin an dönebilirsin.</li><li>Bir şey çalışmazsa yanındaki HSD ekibinden birine sor.</li></ul>` }
+  ];
+  if (S.isMod) steps.push({ t: "Moderatör olarak", b: `<ul><li>En alttaki <b>Moderatör Paneli</b>'nden "Canlı oyun" seçerek herkesi bir oyuna yönlendirirsin.</li><li>Her oyunun altındaki kesik çizgili kutu sadece moderatörlere görünür: oyunu başlatma, bitirme ve sıfırlama düğmeleri orada.</li><li>Katil Kim yönetirken sayfayı kapatma, gece bilgileri senin sayfandan iletilir.</li></ul>` });
+  return steps;
+}
+let gIdx = 0;
+function renderGuide() {
+  const st = guideSteps(), s = st[gIdx];
+  $("guide-step").textContent = `${gIdx + 1} / ${st.length}`;
+  $("guide-title").textContent = s.t;
+  $("guide-body").innerHTML = s.b;
+  $("guide-dots").innerHTML = st.map((_, i) => `<i class="${i === gIdx ? "on" : ""}"></i>`).join("");
+  $("guide-prev").disabled = gIdx === 0;
+  $("guide-next").textContent = gIdx === st.length - 1 ? "Başlayalım" : "İleri";
+}
+function openGuide() { gIdx = 0; renderGuide(); $("guide").hidden = false; $("guide-next").focus(); }
+function closeGuide() { $("guide").hidden = true; try { localStorage.setItem(GUIDE_KEY, "1"); } catch (e) {} }
+function initGuide() {
+  $("guide-open").onclick = openGuide;
+  $("guide-skip").onclick = closeGuide;
+  $("guide-prev").onclick = () => { if (gIdx > 0) { gIdx--; renderGuide(); } };
+  $("guide-next").onclick = () => { if (gIdx < guideSteps().length - 1) { gIdx++; renderGuide(); } else closeGuide(); };
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("guide").hidden) closeGuide(); });
+  let seen = false; try { seen = localStorage.getItem(GUIDE_KEY) === "1"; } catch (e) {}
+  if (!seen) openGuide();
 }

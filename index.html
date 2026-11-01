@@ -215,8 +215,17 @@ ol.podium li b{flex:1}
 .lierow label{color:var(--fg)}
 
 /* Giriş */
-.login{max-width:440px;margin:8vh auto 0;display:flex;flex-direction:column;gap:18px}
-.login h1{font-size:clamp(30px,9vw,44px)}
+.login{max-width:460px;margin:4vh auto 0;display:flex;flex-direction:column;gap:14px}
+.login-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.login .lead{margin:0;font-size:16px;color:var(--muted);line-height:1.5}
+.login-games{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.login-games li{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.login-games b{font-size:14px}
+.login-games span{font-size:12.5px;color:var(--muted);line-height:1.35}
+.login-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--muted)}
+.login-steps b{color:var(--fg)}
+.logo-foot{width:110px;height:auto;display:block;margin:10px auto 0;opacity:.75}
+.login h1{font-size:clamp(28px,8vw,40px)}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px}
 .gbtn svg{width:20px;height:20px}
 .err{color:var(--red);font-size:14px;margin:0;min-height:1.4em}
@@ -225,6 +234,22 @@ details.how-to{background:var(--surface);border:1px solid var(--line);border-rad
 details.how-to summary{cursor:pointer;font-family:var(--display);font-weight:700;font-size:15px}
 details.how-to[open] summary{margin-bottom:12px}
 footer{font-size:12px;color:var(--muted);text-align:center}
+.logo-lg{width:min(260px,70vw);height:auto;display:block}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-sm{height:30px;width:auto;display:block}
+.logo-row .mark{font-size:14px}
+.guide{position:fixed;inset:0;z-index:50;background:rgba(10,12,18,.82);display:flex;align-items:center;justify-content:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.guide-box{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:22px;max-width:460px;width:100%;max-height:100%;overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.logo-guide{height:34px;width:auto;align-self:flex-start;opacity:.9}
+.guide-box h2{font-family:var(--display);font-weight:800;font-size:22px;line-height:1.2;margin:0;text-wrap:balance}
+.guide-box p{margin:0;font-size:15px;line-height:1.55}
+.guide-box ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.guide-box b{color:var(--fg)}
+.guide-box .hl{color:var(--red);font-weight:700}
+.guide-dots{display:flex;gap:6px}
+.guide-dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.guide-dots i.on{background:var(--fg);width:22px;border-radius:999px}
 @media (max-width:440px){.cell{min-height:118px;font-size:13.5px;padding:8px 6px}.cell .nm{font-size:12.5px}.two{grid-template-columns:1fr}.diagram{grid-template-columns:1fr}.diagram svg{max-width:240px;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){.flip{animation:none}}
 </style>
@@ -233,15 +258,34 @@ footer{font-size:12px;color:var(--muted);text-align:center}
 
 <!-- ============ GİRİŞ ============ -->
 <div class="login" id="login">
-  <div class="mark">HSD <b>İAÜ</b></div>
-  <h1>Tanışma <em>Oyunları</em></h1>
-  <p class="how">Oyunlara katılmak için Google hesabınla giriş yap. Adın oyunlarda görünecek, e-posta adresini sadece moderatörler görür.</p>
-  <button class="btn wide gbtn" id="login-btn">
+  <div class="login-card">
+    <div class="mark">HSD <b>İAÜ</b> · TANIŞMA ETKİNLİĞİ</div>
+    <h1>Tanışma <em>Oyunları</em></h1>
+    <p class="lead">Telefonundan oynanan 6 oyunla yeni insanlarla tanış. Bir şey indirmene gerek yok.</p>
+    <ul class="login-games" aria-label="Oyunlar">
+      <li><b>Tech Bingo</b><span>Kutulara uyan kişileri bul</span></li>
+      <li><b>Hız Tanışması</b><span>Her turda yeni biri, yeni soru</span></li>
+      <li><b>Katil Kim?</b><span>Vampir Köylü, gizli roller</span></li>
+      <li><b>Tabu</b><span>Takımınla kelime anlat</span></li>
+      <li><b>Cesaret</b><span>Başkasının yazdığı görevi yap</span></li>
+      <li><b>2 Doğru 1 Yalan</b><span>Yalanı yakala</span></li>
+    </ul>
+  </div>
+  <div class="login-card">
+    <span class="step">Nasıl katılırım?</span>
+    <ol class="login-steps">
+      <li><b>Google ile giriş yap.</b> Adın oyunlarda görünür, e-postanı sadece moderatörler görür.</li>
+      <li><b>Moderatörün oyunu başlatmasını bekle.</b> Oynanan oyun ekranına kendiliğinden gelir.</li>
+      <li><b>Ekrandaki yönergeleri izle.</b> Kısa bir rehber ilk girişte sana yol gösterecek.</li>
+    </ol>
+    <button class="btn wide gbtn" id="login-btn">
     <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.8 6.1C12.3 13.5 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.9-4.7l-7.8-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.7-4-13.6-9.8l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
     Google ile giriş yap
-  </button>
-  <p class="err" id="login-err"></p>
-  <p class="how">Siteyi WhatsApp ya da Instagram içinden açtıysan Google girişe izin vermeyebilir. Sağ üstteki menüden <strong>tarayıcıda aç</strong>.</p>
+    </button>
+    <p class="err" id="login-err"></p>
+    <p class="small">Siteyi WhatsApp ya da Instagram içinden açtıysan giriş çalışmayabilir. Sağ üstteki menüden <strong>tarayıcıda aç</strong>.</p>
+  </div>
+  <img src="hsd-logo.png" class="logo-foot" alt="HSD · Huawei Student Developers">
 </div>
 
 <!-- ============ UYGULAMA ============ -->
@@ -254,6 +298,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     <div class="me">
       <img id="me-photo" alt="" referrerpolicy="no-referrer" hidden>
       <div><b id="me-name"></b><span class="role" id="me-role"></span></div>
+      <button class="btn ghost small" id="guide-open">Rehber</button>
       <button class="btn ghost small" id="logout">Çıkış</button>
     </div>
   </header>
@@ -501,7 +546,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     </div>
   </section>
 
-  <footer>HSD İAÜ · Huawei Student Developers İstanbul Aydın Üniversitesi</footer>
+  <footer><img src="hsd-logo.png" class="logo-foot" alt="HSD · Huawei Student Developers">HSD İAÜ · Huawei Student Developers İstanbul Aydın Üniversitesi</footer>
 </div>
 
 <!-- Hız tanışması tam ekran -->
@@ -517,6 +562,21 @@ footer{font-size:12px;color:var(--muted);text-align:center}
     <button class="btn" id="so-next">Sonraki</button>
   </div>
   <button class="btn ghost small" id="so-close">Tam ekrandan çık</button>
+</div>
+
+<!-- İlk giriş rehberi -->
+<div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden>
+  <div class="guide-box">
+    <img src="hsd-logo.png" class="logo-guide" alt="">
+    <span class="step" id="guide-step"></span>
+    <h2 id="guide-title"></h2>
+    <div id="guide-body"></div>
+    <div class="guide-dots" id="guide-dots"></div>
+    <div class="row spread">
+      <button class="btn ghost small" id="guide-skip">Rehberi kapat</button>
+      <div class="row"><button class="btn ghost small" id="guide-prev">Geri</button><button class="btn small" id="guide-next">İleri</button></div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" hidden></div>

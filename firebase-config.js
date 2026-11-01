@@ -2,7 +2,8 @@
 // Bu bilgiler şifre değildir; güvenliği firestore.rules dosyasındaki kurallar sağlar.
 export const firebaseConfig = {
   apiKey: "AIzaSyAj89gs6KRrHNPmL4cgfvjaNAQTG7bRrH0",
-  authDomain: "hsd-iau-oyunlar.vercel.app", // giriş, iPhone Safari sorunu olmasın diye sitenin kendi adresinden geçer (bkz. vercel.json)
+  // Giriş, sitenin açıldığı adresten geçer (iPhone Safari sorunu olmasın diye).
+  authDomain: ["hsd-iau-oyunlar.web.app", "hsd-iau-oyunlar.vercel.app"].includes(location.hostname) ? location.hostname : "hsd-iau-oyunlar.firebaseapp.com",
   projectId: "hsd-iau-oyunlar",
   storageBucket: "hsd-iau-oyunlar.firebasestorage.app",
   messagingSenderId: "17765747113",
