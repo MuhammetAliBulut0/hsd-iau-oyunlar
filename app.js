@@ -62,6 +62,7 @@ function boot() {
     try { f(); } catch (e) { console.error(e); toast("Bir oyun yüklenemedi: " + e.message); }
   }
   if (S.isMod) initMod();
+  initCodeBox();
 }
 
 /* ---------- sekmeler & canlı oyun ---------- */
@@ -105,6 +106,27 @@ function initMod() {
     $("mod-email").value = ""; $("mod-note").innerHTML = `<b>${esc(email)}</b> artık moderatör. Sayfayı yenilemesi yeterli.`;
   });
   $("mod-add").onclick = () => addMod($("mod-email").value);
+  $("mod-bulk").oninput = null;
+  $("mod-bulk-add").onclick = () => act(async () => {
+    const list = [...new Set(($("mod-bulk").value || "").split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)))];
+    if (!list.length) { $("mod-note").textContent = "Listede geçerli bir e-posta adresi bulunamadı."; return; }
+    for (const em of list) await setDoc(D("mods", em), { addedBy: S.me.email, at: Date.now() });
+    $("mod-bulk").value = ""; $("mod-note").innerHTML = `<b>${list.length}</b> kişi moderatör yapıldı. Sayfalarını yenilemeleri yeterli.`;
+  });
+  if (S.isSuper) {
+    listen(D("config", "modCode"), s => {
+      const c = s.exists() ? s.data() : null;
+      $("mod-code-state").innerHTML = c && c.active ? `Kod açık: <b>${esc(c.code)}</b>` : "Şu an açık bir moderatör kodu yok.";
+      if (c && !$("mod-code").value) $("mod-code").value = c.code || "";
+    });
+    $("mod-code-save").onclick = () => act(async () => {
+      const code = $("mod-code").value.trim();
+      if (code.length < 6) { $("mod-code-state").textContent = "Kod en az 6 karakter olsun, tahmin edilmesi zor olsun."; return; }
+      await setDoc(D("config", "modCode"), { code, active: true, at: Date.now() });
+      toast("Moderatör kodu açıldı.");
+    });
+    $("mod-code-off").onclick = () => act(() => setDoc(D("config", "modCode"), { active: false, at: Date.now() }, { merge: true }));
+  }
   $("mod-list").onclick = e => { const b = e.target.closest("[data-unmod]"); if (b) act(() => deleteDoc(D("mods", b.dataset.unmod))); };
   $("mod-users").onclick = e => { const b = e.target.closest("[data-mod]"); if (b) addMod(b.dataset.mod); };
   renderLiveChips();
@@ -156,4 +178,20 @@ function initGuide() {
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("guide").hidden) closeGuide(); });
   let seen = false; try { seen = localStorage.getItem(GUIDE_KEY) === "1"; } catch (e) {}
   if (!seen) openGuide();
+}
+
+/* ---------- moderatör kodu ile moderatör olma ---------- */
+function initCodeBox() {
+  if (S.isMod) return;
+  $("code-box").hidden = false;
+  $("code-send").onclick = async () => {
+    const code = $("code-input").value.trim();
+    if (!code) { $("code-note").textContent = "Önce kodu yaz."; return; }
+    try {
+      await setDoc(D("mods", S.me.email), { code, name: S.me.name, via: "code", at: Date.now() });
+      $("code-note").innerHTML = "Kod doğru! <b>Moderatör oldun</b>, sayfa yenileniyor…";
+    } catch (e) {
+      $("code-note").innerHTML = e.code === "permission-denied" ? "<b>Kod yanlış</b> ya da şu an kapalı. Yöneticiye sor." : "Bir hata oldu: " + (e.message || e);
+    }
+  };
 }

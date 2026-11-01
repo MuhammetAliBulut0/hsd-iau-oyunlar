@@ -21,9 +21,19 @@ service cloud.firestore {
     }
 
     // ---------- Genel ----------
+    // Moderatörler: kişi kendi kaydını, moderatörler tüm listeyi görür. Yönetici ekler/çıkarır.
+    // Ayrıca yöneticinin belirlediği moderatör kodunu doğru giren kişi kendini moderatör yapabilir.
     match /mods/{email} {
-      allow read: if signedIn();
+      allow read: if signedIn() && (email == myEmail() || isMod());
       allow write: if isSuper();
+      allow create: if signedIn() && request.auth.token.email_verified == true && email == myEmail()
+        && exists(/databases/$(database)/documents/config/modCode)
+        && get(/databases/$(database)/documents/config/modCode).data.active == true
+        && request.resource.data.code == get(/databases/$(database)/documents/config/modCode).data.code;
+    }
+    // Moderatör kodu: sadece yönetici görür ve değiştirir
+    match /config/{doc} {
+      allow read, write: if isSuper();
     }
     // E-postalı katılımcı listesi: sadece moderatörler görür
     match /users/{uid} {

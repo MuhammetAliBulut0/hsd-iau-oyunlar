@@ -224,7 +224,7 @@ ol.podium li b{flex:1}
 .login-games span{font-size:12.5px;color:var(--muted);line-height:1.35}
 .login-steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--muted)}
 .login-steps b{color:var(--fg)}
-.logo-foot{width:110px;height:auto;display:block;margin:10px auto 0;opacity:.75}
+.logo-foot{width:220px;max-width:60vw;height:auto;display:block;margin:12px auto 4px;opacity:.9}
 .login h1{font-size:clamp(28px,8vw,40px)}
 .gbtn{display:flex;align-items:center;justify-content:center;gap:10px}
 .gbtn svg{width:20px;height:20px}
@@ -541,10 +541,28 @@ footer{font-size:12px;color:var(--muted);text-align:center}
       <div class="super-only" style="display:flex;flex-direction:column;gap:8px">
         <label for="mod-email">Moderatör ekle (Gmail adresi)<input type="email" id="mod-email" autocomplete="off" placeholder="ornek@gmail.com"></label>
         <button class="btn small" id="mod-add" style="align-self:flex-start">Moderatör yap</button>
+        <label for="mod-bulk">Toplu ekle (her satıra ya da virgülle bir Gmail adresi)<textarea id="mod-bulk" placeholder="ali@gmail.com, ayse@gmail.com"></textarea></label>
+        <button class="btn ghost small" id="mod-bulk-add" style="align-self:flex-start">Hepsini moderatör yap</button>
       </div>
       <p class="note" id="mod-note"></p>
     </div>
+    <div class="panel super-only">
+      <span class="step">Moderatör kodu</span>
+      <p class="how">Bir kod belirle ve ekibine ver. Kodu sayfanın en altındaki <b>"Moderatör müsün?"</b> kutusuna yazan kişi kendiliğinden moderatör olur. Etkinlik bitince kodu kapat ya da değiştir.</p>
+      <div class="row"><input type="text" id="mod-code" maxlength="40" autocomplete="off" placeholder="Örn. hsd-ekip-2026" style="flex:1;min-width:160px"><button class="btn small" id="mod-code-save">Kodu kaydet ve aç</button></div>
+      <p class="note" id="mod-code-state"></p>
+      <button class="btn ghost small" id="mod-code-off" style="align-self:flex-start">Kodu kapat</button>
+    </div>
   </section>
+
+  <details class="how-to" id="code-box" hidden>
+    <summary>Moderatör müsün?</summary>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <p class="how">HSD ekibindensen yöneticinin verdiği moderatör kodunu yaz.</p>
+      <div class="row"><input type="text" id="code-input" maxlength="40" autocomplete="off" placeholder="Moderatör kodu" style="flex:1;min-width:160px"><button class="btn small" id="code-send">Moderatör ol</button></div>
+      <p class="note" id="code-note"></p>
+    </div>
+  </details>
 
   <footer><img src="hsd-logo.png" class="logo-foot" alt="HSD · Huawei Student Developers">HSD İAÜ · Huawei Student Developers İstanbul Aydın Üniversitesi</footer>
 </div>
